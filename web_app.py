@@ -135,12 +135,18 @@ def reset_quiz(n_preguntes: int = 10):
 
 init_state_once()
 
-st.title("🎮 Jocs en Python (Streamlit)")
+st.title("🎮 DeGalaLab Arcade")
+st.caption("Arcade educativa: jocs curts per aprendre Python jugant. ✨")
+
 
 joc = st.sidebar.selectbox(
     "Tria un joc",
     ["Endevina el nombre", "Pedra/Paper/Tisores", "Penjat", "Quiz"],
 )
+st.sidebar.markdown("### ℹ️ DeGalaLab Arcade")
+st.sidebar.caption("Mini jocs fets amb Python + Streamlit per practicar programació.")
+st.sidebar.caption("Privacitat: no es recullen dades personals, ni logins, ni emails. Tot funciona a la sessió del navegador.")
+st.sidebar.markdown("**DeGalaLab:** https://degalalab.com")
 
 st.sidebar.divider()
 
@@ -240,12 +246,14 @@ elif joc == "Penjat":
         st.write("Tria una lletra:")
 
         # Teclat A-Z (simple)
-        cols = st.columns(13)
+        cols = st.columns(7)
+
+
         letters = list(string.ascii_lowercase)
 
         for i, ch in enumerate(letters):
             disabled = (ch in usadas) or (intents == 0) or ("_" not in estat)
-            with cols[i % 13]:
+            with cols[i % 7]:
                 if st.button(ch, disabled=disabled):
                     usadas.add(ch)
                     if ch in paraula:
