@@ -272,7 +272,7 @@ elif joc == "Penjat":
 # 4) Quiz: Normal vs Examen
 # ---------------------------
 else:
-    st.header("🧠 Quiz")
+    st.header("❓Quiz")
 
     # Selector de mode
     mode = st.radio("Mode:", ["Normal", "Examen"], horizontal=True)
