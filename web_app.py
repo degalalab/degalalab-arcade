@@ -1,6 +1,8 @@
 import random
 import string
 import streamlit as st
+from missing_number import render_missing_number_game
+
 
 st.set_page_config(page_title="Jocs Python", page_icon="🎮", layout="centered")
 
@@ -26,6 +28,8 @@ def init_state_once():
         st.session_state.quiz_mode = "Normal"
     if "quiz_i" not in st.session_state:
         reset_quiz()
+
+    # Missing number
 
 
 def reset_endevina():
@@ -138,11 +142,11 @@ init_state_once()
 st.title("🎮 DeGalaLab Arcade")
 st.caption("Arcade educativa: jocs curts per aprendre Python jugant. ✨")
 
-
 joc = st.sidebar.selectbox(
     "Tria un joc",
-    ["Endevina el nombre", "Pedra/Paper/Tisores", "Penjat", "Quiz"],
+    ["🎯 Endevina el nombre", "✂️ Pedra/Paper/Tisores", "🔤 Penjat", "❓ Quiz", "🔎 Quina falta?"]
 )
+
 st.sidebar.markdown("### ℹ️ DeGalaLab Arcade")
 st.sidebar.caption("Mini jocs fets amb Python + Streamlit per practicar programació.")
 st.sidebar.caption("Privacitat: no es recullen dades personals, ni logins, ni emails. Tot funciona a la sessió del navegador.")
@@ -267,7 +271,8 @@ elif joc == "Penjat":
     if st.button("Reiniciar penjat"):
         reset_penjat()
         st.rerun()
-
+elif joc == "🔎 Quina falta?":
+    render_missing_number_game()
 # ---------------------------
 # 4) Quiz: Normal vs Examen
 # ---------------------------
