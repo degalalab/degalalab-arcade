@@ -1,43 +1,24 @@
+# web_app.py
+from __future__ import annotations
+
 import random
 import string
 import streamlit as st
-from missing_number import render_missing_number_game
 
+from missing_number import render_missing_number_game
 
 st.set_page_config(page_title="Jocs Python", page_icon="🎮", layout="centered")
 
+
 # ---------------------------
-# Utilitats
+# Reset helpers
 # ---------------------------
-def init_state_once():
-    # Endevina
-    if "endevina_secret" not in st.session_state:
-        st.session_state.endevina_secret = random.randint(1, 100)
-        st.session_state.endevina_intents = 0
-
-    # RPS
-    if "rps_stats" not in st.session_state:
-        st.session_state.rps_stats = {"tu": 0, "pc": 0, "empat": 0}
-
-    # Penjat
-    if "penjat_paraula" not in st.session_state:
-        reset_penjat()
-
-    # Quiz
-    if "quiz_mode" not in st.session_state:
-        st.session_state.quiz_mode = "Normal"
-    if "quiz_i" not in st.session_state:
-        reset_quiz()
-
-    # Missing number
-
-
-def reset_endevina():
+def reset_endevina() -> None:
     st.session_state.endevina_secret = random.randint(1, 100)
     st.session_state.endevina_intents = 0
 
 
-def reset_penjat():
+def reset_penjat() -> None:
     paraules = [
         "python", "variables", "funcio", "bucle", "llista",
         "diccionari", "programa", "terminal", "notebook", "debug",
@@ -49,6 +30,10 @@ def reset_penjat():
     st.session_state.penjat_intents_max = 6
     st.session_state.penjat_intents = 6
     st.session_state.penjat_msg = ""
+
+
+def penjat_mostrar_paraula(paraula: str, encertades: set[str]) -> str:
+    return " ".join([c if c in encertades else "_" for c in paraula])
 
 
 PENJAT = [
@@ -111,11 +96,9 @@ PENJAT = [
 ]
 
 
-def penjat_mostrar_paraula(paraula: str, encertades: set[str]) -> str:
-    return " ".join([c if c in encertades else "_" for c in paraula])
-
-
-# Preguntes Quiz (posa-hi totes les teves; aquí hi ha una base)
+# ---------------------------
+# Quiz
+# ---------------------------
 PREGUNTES = [
     {"q": "Quin tipus de dada retorna input() a Python?", "opcions": ["int", "str", "float", "bool"], "correcta": "str"},
     {"q": "Quina paraula clau surt d'un bucle abans d'hora?", "opcions": ["stop", "break", "exit", "return"], "correcta": "break"},
@@ -126,7 +109,7 @@ PREGUNTES = [
 ]
 
 
-def reset_quiz(n_preguntes: int = 10):
+def reset_quiz(n_preguntes: int = 10) -> None:
     pool = PREGUNTES[:]
     random.shuffle(pool)
     st.session_state.quiz_qs = pool[: min(n_preguntes, len(pool))]
@@ -137,27 +120,54 @@ def reset_quiz(n_preguntes: int = 10):
     st.session_state.quiz_feedback = ""
 
 
+# ---------------------------
+# Session state init
+# ---------------------------
+def init_state_once() -> None:
+    # Endevina
+    if "endevina_secret" not in st.session_state:
+        reset_endevina()
+
+    # RPS
+    if "rps_stats" not in st.session_state:
+        st.session_state.rps_stats = {"tu": 0, "pc": 0, "empat": 0}
+
+    # Penjat
+    if "penjat_paraula" not in st.session_state:
+        reset_penjat()
+
+    # Quiz
+    if "quiz_mode" not in st.session_state:
+        st.session_state.quiz_mode = "Normal"
+    if "quiz_i" not in st.session_state:
+        reset_quiz(n_preguntes=10)
+
+
 init_state_once()
 
+
+# ---------------------------
+# UI
+# ---------------------------
 st.title("🎮 DeGalaLab Arcade")
 st.caption("Arcade educativa: jocs curts per aprendre Python jugant. ✨")
 
 joc = st.sidebar.selectbox(
     "Tria un joc",
-    ["🎯 Endevina el nombre", "✂️ Pedra/Paper/Tisores", "🔤 Penjat", "❓ Quiz", "🔎 Quina falta?"]
+    ["🎯 Endevina el nombre", "✂️ Pedra/Paper/Tisores", "🔤 Penjat", "❓ Quiz", "🔎 Quina falta?"],
 )
 
 st.sidebar.markdown("### ℹ️ DeGalaLab Arcade")
 st.sidebar.caption("Mini jocs fets amb Python + Streamlit per practicar programació.")
 st.sidebar.caption("Privacitat: no es recullen dades personals, ni logins, ni emails. Tot funciona a la sessió del navegador.")
 st.sidebar.markdown("**DeGalaLab:** https://degalalab.com")
-
 st.sidebar.divider()
+
 
 # ---------------------------
 # 1) Endevina el nombre
 # ---------------------------
-if joc == "Endevina el nombre":
+if joc == "🎯 Endevina el nombre":
     st.header("🎯 Endevina el nombre")
 
     guess = st.number_input("Escriu un número (1–100)", min_value=1, max_value=100, step=1)
@@ -175,16 +185,19 @@ if joc == "Endevina el nombre":
             else:
                 st.success(f"Correcte! {st.session_state.endevina_intents} intents.")
                 reset_endevina()
+                st.rerun()
 
     with c2:
         if st.button("Reiniciar partida", use_container_width=True):
             reset_endevina()
             st.warning("Partida reiniciada.")
+            st.rerun()
+
 
 # ---------------------------
-# 2) RPS
+# 2) Pedra/Paper/Tisores
 # ---------------------------
-elif joc == "Pedra/Paper/Tisores":
+elif joc == "✂️ Pedra/Paper/Tisores":
     st.header("✂️ Pedra, paper o tisores")
 
     opcions = ["pedra", "paper", "tisores"]
@@ -212,14 +225,16 @@ elif joc == "Pedra/Paper/Tisores":
         if st.button("Reiniciar marcador", use_container_width=True):
             st.session_state.rps_stats = {"tu": 0, "pc": 0, "empat": 0}
             st.warning("Marcador reiniciat.")
+            st.rerun()
 
     st.subheader("📊 Marcador")
     st.write(st.session_state.rps_stats)
 
+
 # ---------------------------
 # 3) Penjat
 # ---------------------------
-elif joc == "Penjat":
+elif joc == "🔤 Penjat":
     st.header("🔤 Penjat")
 
     paraula = st.session_state.penjat_paraula
@@ -241,18 +256,13 @@ elif joc == "Penjat":
     if st.session_state.penjat_msg:
         st.info(st.session_state.penjat_msg)
 
-    # Final?
     if "_" not in estat:
         st.success(f"🏆 Has guanyat! La paraula era: **{paraula}**")
     elif intents == 0:
         st.error(f"💀 Has perdut! La paraula era: **{paraula}**")
     else:
         st.write("Tria una lletra:")
-
-        # Teclat A-Z (simple)
         cols = st.columns(7)
-
-
         letters = list(string.ascii_lowercase)
 
         for i, ch in enumerate(letters):
@@ -271,19 +281,19 @@ elif joc == "Penjat":
     if st.button("Reiniciar penjat"):
         reset_penjat()
         st.rerun()
-elif joc == "🔎 Quina falta?":
-    render_missing_number_game()
-# ---------------------------
-# 4) Quiz: Normal vs Examen
-# ---------------------------
-else:
-    st.header("❓Quiz")
 
-    # Selector de mode
+
+# ---------------------------
+# 4) Quiz
+# ---------------------------
+elif joc == "❓ Quiz":
+    st.header("❓ Quiz")
+
     mode = st.radio("Mode:", ["Normal", "Examen"], horizontal=True)
     if mode != st.session_state.quiz_mode:
         st.session_state.quiz_mode = mode
         reset_quiz(n_preguntes=10)
+        st.rerun()
 
     c1, c2 = st.columns(2)
     with c1:
@@ -297,7 +307,6 @@ else:
     qs = st.session_state.quiz_qs
     i = st.session_state.quiz_i
 
-    # Si mode examen: deixem navegar pregunta a pregunta i guardem respostes
     if not st.session_state.quiz_done:
         if i >= len(qs):
             st.session_state.quiz_done = True
@@ -310,10 +319,8 @@ else:
             resposta = st.radio("Resposta:", p["opcions"], key=key)
 
             if st.button("Enviar resposta"):
-                # Guardem la resposta
                 st.session_state.quiz_respostes.append((p, resposta))
 
-                # Feedback segons mode
                 if st.session_state.quiz_mode == "Normal":
                     if resposta == p["correcta"]:
                         st.session_state.quiz_punts += 1
@@ -321,24 +328,19 @@ else:
                     else:
                         st.error(f"❌ Incorrecte. Era: {p['correcta']}")
 
-                # Avança
                 st.session_state.quiz_i += 1
                 st.rerun()
 
-    # Correcció / Resultats
     if st.session_state.quiz_done:
         respostes = st.session_state.quiz_respostes
         total = len(respostes)
 
-        # En mode normal, punts ja s'ha anat sumant
         if st.session_state.quiz_mode == "Normal":
             punts = st.session_state.quiz_punts
             percent = (punts / total * 100) if total else 0
             st.subheader("📊 Resultats")
             st.write(f"**Punts:** {punts}/{total} ({percent:.1f}%)")
-
         else:
-            # Mode examen: corregim ara
             encerts = 0
             errors_list = []
             for p, r in respostes:
@@ -352,10 +354,13 @@ else:
             st.write(f"**Encerts:** {encerts}/{total} ({percent:.1f}%)")
 
             if errors_list:
-                st.write("### ❌ Errors")
-                for q, r_user, r_ok in errors_list:
-                    st.write(f"- **{q}**")
-                    st.write(f"  - La teva resposta: `{r_user}`")
-                    st.write(f"  - Correcta: `{r_ok}`")
-            else:
-                st.success("🎉 Perfecte! Cap error.")
+                st.markdown("### ❌ Errors")
+                for q, r, corr in errors_list:
+                    st.write(f"- **{q}** → vas dir: `{r}` | correcte: `{corr}`")
+
+
+# ---------------------------
+# 5) Quina falta?
+# ---------------------------
+elif joc == "🔎 Quina falta?":
+    render_missing_number_game()
